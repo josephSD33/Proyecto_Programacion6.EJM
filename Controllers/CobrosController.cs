@@ -80,10 +80,7 @@ namespace Proyecto_Programacion6.Controllers
             {
                     return new HttpStatusCodeResult(500);
             }
-        }
-        
-
-
+        }        
 
 
 
