@@ -1,0 +1,78 @@
+﻿@model Proyecto_Programacion6.Models.DetalleCobroViewModel
+@{
+    var meses = new[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
+    var cobro = Model.Cobro;
+    int numeroMes = Convert.ToInt32(cobro.Mes);
+    bool pendiente = cobro.Estado == "Pendiente";
+}
+<table class="table table-bordered">
+    <tbody>
+        <tr><th style="width:35%">#Cobro</th><td>@cobro.IdCobro</td></tr>
+        <tr><th>Casa</th><td>@cobro.Casa</td></tr>
+        <tr><th>Cliente</th><td>@cobro.Cliente</td></tr>
+        <tr><th>Mes</th><td>@meses[numeroMes - 1]</td></tr>
+        <tr><th>Año</th><td>@cobro.Anno</td></tr>
+        <tr><th>Estado</th><td>@cobro.Estado</td></tr>
+        <tr>
+            <th>Fecha de cancelación</th>
+            <td>@(cobro.FechaPagada == null ? "Sin cancelar" : string.Format("{0:dd/MM/yyyy}", cobro.FechaPagada))</td>
+        </tr>
+        <tr>
+            <th>Monto</th>
+            <td>$ @string.Format("{0:N2}", cobro.Monto)</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Servicios</h4>
+@if (Model.Servicios.Count == 0)
+{
+    <p>No hay servicios asociados.</p>
+}
+else
+{
+    <ul>
+        @foreach (var s in Model.Servicios)
+        {
+            <li>@s.Nombre - $ @string.Format("{0:N2}", s.Precio)</li>
+        }
+    </ul>
+}
+
+<h4>Bitácora</h4>
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th style="text-align:center">Fecha y hora</th>
+            <th>Acción realizada</th>
+            <th>Persona</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var b in Model.Bitacora)
+        {
+            <tr>
+                <td style="text-align:center">@string.Format("{0:dd/MM/yyyy HH:mm}", b.Fecha)</td>
+                <td>@b.Detalle</td>
+                <td>@b.Persona</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (Model.Bitacora.Count == 0)
+{
+    <p>No hay registros en la bitácora para este cobro.</p>
+}
+
+<div style="text-align:right">
+    @if (Model.EsEmpleado && pendiente)
+    {
+        @Html.ActionLink("Editar cobro", "Editar", "Cobros", new { id = cobro.IdCobro }, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Pagar", "Pagar", "Cobros", new { id = cobro.IdCobro },
+                 new { @class = "btn btn-success",})
+        @Html.ActionLink("Eliminar cobro", "Eliminar", "Cobros", new { id = cobro.IdCobro },
+                 new { @class = "btn btn-danger"})
+    }
+    <button type="button" id="btnCerrarDetalle" class="btn btn-default">Cerrar</button>
+</div>

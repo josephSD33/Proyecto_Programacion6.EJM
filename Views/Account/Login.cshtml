@@ -1,0 +1,33 @@
+﻿@model Proyecto_Programacion6.Models.UsuarioLogin
+@{
+    ViewBag.Title = "Login";
+}
+
+<h2>Login</h2>
+
+@using (Html.BeginForm("Login", "Account", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div>
+        <label>Email</label>
+        @Html.TextBoxFor(m => m.Email)
+    </div>
+
+    <div>
+        <label>Clave</label>
+        @Html.PasswordFor(m => m.Contrasena)
+    </div>
+
+    if (ViewBag.Error != null)
+    {
+        <div>@ViewBag.Error</div>
+    }
+
+    <button type="submit">Ingresar</button>
+}
+
+
+
+<!--nfonseca1498@hotmail.com
+kmartinez32@hotmail.com-->

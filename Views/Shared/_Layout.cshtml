@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    <link href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css" rel="stylesheet" />
+</head>
+<body>
+    @{
+        bool haySesion = Session["IdPersona"] != null;
+        bool esEmpleado = Session["EsEmpleado"] != null && (bool)Session["EsEmpleado"];
+    }
+
+    <header>
+        <h1>Sistema de Cobros</h1>
+
+        @if (haySesion)
+        {
+            <p>Bienvenido: @Session["NombreCompleto"]</p>
+
+            <nav>
+                @Html.ActionLink("Consultar cobros", "Index", "Home")
+
+                @if (esEmpleado)
+                {
+                    @Html.ActionLink("Gestionar cobros", "Gestionar", "Cobros")
+                    @Html.ActionLink("Gestionar servicios", "Index", "Servicios")
+                }
+
+                @Html.ActionLink("Cerrar sesión", "Logout", "Account", null,
+                    new { onclick = "return confirm('¿Desea cerrar la sesión?');" })
+            </nav>
+        }
+    </header>
+
+    <div class="container body-content">
+        @RenderBody()
+    </div>
+
+    <footer>
+        <p>&copy; @DateTime.Now.Year - Programación VI</p>
+    </footer>
+
+    @Scripts.Render("~/bundles/jquery")
+    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.min.js"
+        integrity="sha256-mblSWfbYzaq/f+4akyMhE6XELCou4jbkgPv+JQPER2M="
+        crossorigin="anonymous"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

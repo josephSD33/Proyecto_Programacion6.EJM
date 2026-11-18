@@ -1,0 +1,122 @@
+﻿@model List<DataModels.PviProyectoFinalDBStoredProcedures.SpListarCobrosResult>
+@{
+    ViewBag.Title = ViewBag.Titulo;
+    bool esEmpleado = ViewBag.EsEmpleado == true;
+    var meses = new[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
+}
+<h2>@ViewBag.Titulo</h2>
+
+@if (esEmpleado)
+{
+    <form method="get" action="@Url.Action("Gestionar", "Cobros")" class="row g-2 mb-3">
+        <div class="col-md-4">
+            @Html.DropDownList("idCliente", (SelectList)ViewBag.Clientes, "Seleccione un cliente",
+                new { @class = "form-control", onchange = "this.form.submit();" })
+        </div>
+        <div class="col-md-4">
+            <select name="anno" class="form-control" onchange="this.form.submit();">
+                <option value="">Seleccione un año</option>
+                @for (int a = 2024; a <= 2034; a++)
+                {
+                    <option value="@a" @(ViewBag.Anno == a ? "selected" : "")>@a</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select name="mes" class="form-control" onchange="this.form.submit();">
+                <option value="">Seleccione un mes</option>
+                @for (int m = 1; m <= 12; m++)
+                {
+                    <option value="@m" @(ViewBag.Mes == m ? "selected" : "")>@meses[m - 1]</option>
+                }
+            </select>
+        </div>
+    </form>
+
+    @Html.ActionLink("Nuevo Cobro", "Crear", "Cobros", null, new { @class = "btn btn-primary mb-3" })
+}
+@if (ViewBag.Mensaje != null)
+{
+    <div class="alert alert-danger">@ViewBag.Mensaje</div>
+}
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th style="text-align:center; font-weight:bold">#Cobro</th>
+            @if (esEmpleado)
+            {
+                <th style="text-align:left; font-weight:bold">Cliente</th>
+            }
+            <th style="text-align:center; font-weight:bold">Casa</th>
+            <th style="text-align:center; font-weight:bold">Periodo</th>
+            <th style="text-align:center; font-weight:bold">Estado</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td style="text-align:center">@c.IdCobro</td>
+                @if (esEmpleado)
+                {
+                    <td style="text-align:left">@c.Cliente</td>
+                }
+                <td style="text-align:center">@c.Casa</td>
+                <td style="text-align:center">@c.Periodo</td>
+                <td style="text-align:center">@c.Estado</td>
+                <td><button type="button" class="btn btn-primary btnConsultar" data-id="@c.IdCobro">Consultar</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.Count == 0)
+{
+    <p>No hay cobros para mostrar.</p>
+}
+<div id="dialog" title="Detalle del cobro"></div>
+
+@section Scripts{
+    <script>
+        $(function () {
+            $("#dialog").dialog({
+                autoOpen: false,
+                modal: true,
+                resizable: false,
+                width: 800,
+                maxHeight: $(window).height() - 60
+            });
+
+            $(document).on("click", ".btnConsultar", function () {
+                var idCobro = $(this).data("id");
+                $.ajax({
+                    url: '@Url.Action("Detalle", "Cobros")',
+                    type: "GET",
+                    data: { id: idCobro },
+                    cache: false
+                })
+                .done(function (html) {
+                    $("#dialog").html(html).dialog("open");
+                })
+                .fail(function () {
+                    alert("No se pudo abrir el detalle del cobro.");
+                });
+            });
+
+            $(document).on("click", "#btnCerrarDetalle", function () {
+                $("#dialog").dialog("close");
+            });
+        });
+    </script>
+}
+
+
+
+
+
+
+
+
