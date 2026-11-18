@@ -618,3 +618,23 @@ BEGIN
 		
 END
 GO
+
+/*CREATE PROCEDURE [dbo].[sp_ObtenerBitacoraPorCobro]
+	@id_cobro INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+	SELECT 
+		b.id_bitacora AS IdBitacora,
+		b.fecha AS Fecha,
+		b.detalle AS Detalle,
+		p.nombre + ' ' + p.apellido AS Persona
+	FROM Bitacora b
+	INNER JOIN Persona p on b.id_user = p.id_persona
+	WHERE b.id_cobro = @id_cobro
+	ORDER BY b.id_bitacora desc;
+		
+		
+END
+GO*/
