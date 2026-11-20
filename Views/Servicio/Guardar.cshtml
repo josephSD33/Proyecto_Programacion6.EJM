@@ -1,7 +1,107 @@
-﻿
+﻿@model Proyecto_Programacion6.Models.ServicioModel
+
 @{
-    ViewBag.Title = "Guardar";
+    ViewBag.Title = "Guardar Servicio";
 }
 
-<h2>Guardar</h2>
 
+<div class="card">
+
+    <h2 class="titulo">Guardar Servicio</h2>
+
+    @using (Html.BeginForm("Guardar", "Servicio", FormMethod.Post, new { id = "myform" }))
+    {
+        @Html.HiddenFor(_ => _.Id_servicio)
+
+        <div class="form-group">
+            <label>Nombre</label>
+            @if (Model.Id_servicio > 0)
+            {
+                @Html.TextBoxFor(_ => _.Nombre, new { @class = "form-control", @readonly = "readonly" })
+            }
+            else
+            {
+                @Html.TextBoxFor(_ => _.Nombre, new { @class = "form-control", placeholder = "Ingrese el nombre del servicio" })
+            }
+        </div>
+
+        <div class="form-group">
+            <label>Descripción</label>
+            @Html.TextAreaFor(_ => _.Descripcion, new { @class = "form-control", rows = 3, placeholder = "Ingrese una descripción" })
+        </div>
+
+        <div class="form-group">
+            <label>Precio</label>
+            @Html.TextBoxFor(_ => _.Precio, new { @class = "form-control", placeholder = "Ingrese el precio" })
+        </div>
+
+        <div class="form-group">
+            <label>Categoría</label>
+            @Html.DropDownListFor(_ => _.Id_categoria,
+                      new List<SelectListItem>(),
+                      "Seleccione una opcion",
+                      new { @class = "form-control", @id = "Id_categoria" })
+        </div>
+
+        <div style="margin-top:20px;">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="@Url.Action("Index", "Servicio")" class="btn btn-default">Regresar</a>
+        </div>
+    }
+
+    <br />
+    @if (ViewBag.resultado != null)
+    {
+        <div class="alert alert-info">@ViewBag.resultado</div>
+    }
+
+</div>
+
+<script src="~/Scripts/jquery-3.7.0.min.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+
+<script>
+    function cleanDropdown(ddl) {
+        ddl.empty();
+        ddl.append("<option value=''>Seleccione una opcion</option>");
+    }
+
+    function loadDropdown(url, parametros, ddl, selected) {
+        $.post(url, parametros, function (data) {
+            cleanDropdown(ddl);
+
+            $(data).each(function () {
+                var option = new Option(this.value, this.id);
+
+                if (this.id == selected) {
+                    option.selected = true;
+                }
+
+                ddl.append(option);
+            });
+        });
+    }
+
+    $(document).ready(function () {
+        loadDropdown("/Servicio/ObtenerCategorias", {}, $('#Id_categoria'), '@Model.Id_categoria');
+
+        if ($('#Id_servicio').val() != "0" && $('#Id_servicio').val() != "") {
+            $('#Id_categoria').prop('disabled', true);
+        }
+    });
+
+    $("#myform").validate({
+        rules: {
+            'Nombre': { required: true },
+            'Descripcion': { required: true },
+            'Precio': { required: true, number: true },
+            'Id_categoria': { required: true }
+        },
+        messages: {
+            'Nombre': "Ingrese el nombre del servicio",
+            'Descripcion': "Ingrese la descripción",
+            'Precio': "Ingrese un precio válido",
+            'Id_categoria': "Seleccione una categoría"
+        }
+    });
+</script>

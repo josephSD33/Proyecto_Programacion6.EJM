@@ -1,7 +1,31 @@
-﻿
+﻿@model List<DataModels.PviProyectoFinalDBStoredProcedures.SpReadServiciosByClienteResult>
+
 @{
-    ViewBag.Title = "MisServicios";
+    ViewBag.Title = "Mis Servicios";
 }
 
-<h2>MisServicios</h2>
+<h2>Mis Servicios</h2>
+
+<label>@ViewBag.Mensaje</label>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Categoría</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Id_servicio</td>
+            <td>@item.Nombre</td>
+            <td>@item.Descripcion</td>
+            <td>@item.Precio</td>
+            <td>@item.Categoria</td>
+        </tr>
+    }
+</table>
 
