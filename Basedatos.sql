@@ -639,3 +639,103 @@ BEGIN
 		
 END
 GO*/
+
+-------------Agregar a base de datos----------------
+USE [PVI_ProyectoFinal]
+GO
+
+CREATE PROCEDURE [dbo].[sp_ReadServicios]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT s.id_servicio AS Id_servicio, s.nombre AS Nombre, s.descripcion AS Descripcion,
+           s.precio AS Precio, c.nombre AS Categoria, s.estado AS Estado
+    FROM dbo.Servicios s
+    INNER JOIN dbo.Categorias c ON s.id_categoria = c.id_categoria
+    ORDER BY s.nombre;
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_ReadServicioById]
+    @id_servicio INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT s.id_servicio AS Id_servicio, s.nombre AS Nombre, s.descripcion AS Descripcion,
+           s.precio AS Precio, s.id_categoria AS Id_categoria, c.nombre AS Categoria,
+           s.estado AS Estado
+    FROM dbo.Servicios s
+    INNER JOIN dbo.Categorias c ON s.id_categoria = c.id_categoria
+    WHERE s.id_servicio = @id_servicio;
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_InsertServicio]
+    @nombre VARCHAR(100),
+    @descripcion NVARCHAR(MAX),
+    @precio DECIMAL(10, 2),
+    @id_categoria INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO dbo.Servicios (nombre, descripcion, precio, id_categoria, estado)
+    VALUES (@nombre, @descripcion, @precio, @id_categoria, 1);
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_UpdateServicio]
+    @id_servicio INT,
+    @descripcion NVARCHAR(MAX),
+    @precio DECIMAL(10, 2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE dbo.Servicios
+    SET descripcion = @descripcion,
+        precio = @precio
+    WHERE id_servicio = @id_servicio;
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_InactivarServicio]
+    @id_servicio INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE dbo.Servicios
+    SET estado = 0
+    WHERE id_servicio = @id_servicio;
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_ReadCategorias]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id_categoria AS IdCategoria, nombre AS Nombre
+    FROM dbo.Categorias
+    WHERE estado = 1
+    ORDER BY nombre;
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_ReadServiciosByCliente]
+    @id_persona INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT s.id_servicio AS Id_servicio, s.nombre AS Nombre, s.descripcion AS Descripcion,
+           s.precio AS Precio, c.nombre AS Categoria
+    FROM dbo.Servicios s
+    INNER JOIN dbo.Categorias c ON s.id_categoria = c.id_categoria
+    WHERE EXISTS (
+        SELECT 1
+        FROM dbo.DetalleCobro d
+        INNER JOIN dbo.Cobros co ON d.id_cobro = co.id_cobro
+        INNER JOIN dbo.Casas ca ON co.id_casa = ca.id_casa
+        WHERE d.id_servicio = s.id_servicio
+          AND ca.id_persona = @id_persona
+    )
+    ORDER BY s.nombre;
+END
+GO

@@ -139,9 +139,11 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\CobrosController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\ServicioController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\CasaModel.cs" />
     <Compile Include="Models\DetalleCobroViewModel.cs" />
     <Compile Include="Models\MyDatabase1.generated.cs">
       <AutoGen>True</AutoGen>
@@ -230,6 +232,9 @@
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Cobros\Gestionar.cshtml" />
     <Content Include="Views\Cobros\_DetalleCobro.cshtml" />
+    <Content Include="Views\Servicio\Guardar.cshtml" />
+    <Content Include="Views\Servicio\index.cshtml" />
+    <Content Include="Views\Servicio\MisServicios.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
