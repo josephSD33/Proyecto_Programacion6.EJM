@@ -137,6 +137,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\CasaController.cs" />
     <Compile Include="Controllers\CobrosController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ServicioController.cs" />
@@ -243,6 +244,8 @@
     <Content Include="Views\Servicio\MisServicios.cshtml" />
     <Content Include="Views\Cobros\Crear.cshtml" />
     <Content Include="Views\Cobros\Editar.cshtml" />
+    <Content Include="Views\Casa\Index.cshtml" />
+    <Content Include="Views\Casa\Crear.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

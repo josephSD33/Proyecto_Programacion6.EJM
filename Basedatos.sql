@@ -835,3 +835,19 @@ BEGIN
     VALUES (@detalle, @id_cobro, @id_user, GETDATE());
 END
 GO
+
+--Rf00-7 casas--
+CREATE PROCEDURE dbo.sp_readCasas
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT c.id_casa, c.nombre_casa, c.metros_cuadrados, c.numero_habitaciones,
+           c.numero_banos, c.id_persona AS NumeroPropietario,
+           c.fecha_construccion, c.estado
+    FROM dbo.Casas c
+    ORDER BY c.nombre_casa ASC;
+END
+GO
+
+exec sp_readCasas;
