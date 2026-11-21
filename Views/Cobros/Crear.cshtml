@@ -1,0 +1,174 @@
+﻿
+@using DataModels
+
+@{
+    ViewBag.Title = "Crear cobro";
+
+    bool esEmpleado = ViewBag.EsEmpleado == true;
+
+    var clientes = (SelectList)ViewBag.Clientes;
+
+    var servicios =
+        (List<PviProyectoFinalDBStoredProcedures.SpReadServiciosResult>)
+        ViewBag.Servicios;
+}
+
+<h2>Crear cobro</h2>
+
+<form id="formulario">
+
+    <div class="form-group">
+        <label>Cliente</label>
+
+        @Html.DropDownList(
+                 "idPersona",
+                 clientes,
+                 "Seleccione un cliente",
+                 new
+                 {
+                     @class = "form-control",
+                     id = "idPersona"
+                 })
+    </div>
+
+    <div class="form-group">
+        <label>Casa</label>
+
+        <select id="idCasa" class="form-control">
+            <option value="">Seleccione una casa</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Año</label>
+
+        <select id="anno" class="form-control">
+            <option value="">Seleccione un año</option>
+
+            @for (int a = 2024; a <= 2034; a++)
+            {
+                <option value="@a">@a</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Mes</label>
+
+        <select id="mes" class="form-control">
+            <option value="">Seleccione un mes</option>
+
+            @for (int m = 1; m <= 12; m++)
+            {
+                <option value="@m">@m</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Servicios</label>
+
+        @foreach (var s in servicios)
+        {
+            <div>
+                <label>
+                    <input type="checkbox"
+                           name="servicios"
+                           value="@s.Id_servicio" />
+
+                    @s.Nombre - $ @s.Precio
+                </label>
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Guardar
+    </button>
+
+    @Html.ActionLink(
+            "Regresar", "Gestionar", "Cobros",
+            null, new { @class = "btn btn-secondary" })
+
+</form>
+
+@section Scripts {
+
+    <script>
+
+    $(function () {
+
+        cargarCasas();
+
+        $("#idPersona").change(cargarCasas);
+
+        $("#formulario").submit(function (e) {
+
+            e.preventDefault();
+            guardar();
+
+        });
+
+    });
+
+    function cargarCasas() {
+
+        var idPersona = $("#idPersona").val();
+
+        $("#idCasa").html(
+            '<option value="">Seleccione una casa</option>'
+        );
+
+        if (!idPersona) return;
+
+        $.getJSON('@Url.Action("RetornaCasas", "Cobros")',
+            { idPersona: idPersona },
+            function (lista) {
+
+                $.each(lista, function (i, item) {
+
+                    $("#idCasa").append(
+                        new Option(item.value, item.id)
+                    );
+
+                });
+
+            });
+    }
+
+    function guardar() {
+
+        var data = {
+            idPersona: $("#idPersona").val(),
+            idCasa: $("#idCasa").val(),
+            anno: $("#anno").val(),
+            mes: $("#mes").val(),
+            servicios: $("input[name=servicios]:checked")
+                .map(function () {
+                    return this.value;
+                }).get()
+        };
+
+        if (!data.idCasa || !data.anno ||
+            !data.mes || data.servicios.length == 0) {
+
+            alert("Complete todos los campos.");
+            return;
+        }
+
+        $.post('@Url.Action("Crear", "Cobros")',
+            data,
+            function (resp) {
+
+                alert(resp.mensaje);
+
+                if (resp.ok) {
+                    window.location.href =
+                        '@Url.Action("Gestionar", "Cobros")';
+                }
+
+            });
+    }
+
+    </script>
+}

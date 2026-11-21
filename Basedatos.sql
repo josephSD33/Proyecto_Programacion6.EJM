@@ -739,3 +739,99 @@ BEGIN
     ORDER BY s.nombre;
 END
 GO
+
+-------------2 Agregar a base de datos----------------
+USE PVI_ProyectoFinal;
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_ListarCasasPorPersona]
+    @id_persona INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id_casa AS IdCasa, nombre_casa AS NombreCasa
+    FROM dbo.Casas
+    WHERE id_persona = @id_persona AND estado = 1
+    ORDER BY nombre_casa;
+END
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_ObtenerCasaPorId]
+    @id_casa INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id_casa AS IdCasa, nombre_casa AS NombreCasa, id_persona AS IdPersona,
+           metros_cuadrados AS MetrosCuadrados, precio AS Precio
+    FROM dbo.Casas
+    WHERE id_casa = @id_casa;
+END
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_ExisteCobroPendiente]
+    @id_casa INT,
+    @mes INT,
+    @anno INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT COUNT(*) AS Cantidad
+    FROM dbo.Cobros
+    WHERE id_casa = @id_casa AND mes = @mes AND anno = @anno AND estado = 'Pendiente';
+END
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_ObtenerCobroBase]
+    @id_cobro INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT c.id_cobro AS IdCobro, c.id_casa AS IdCasa, ca.nombre_casa AS NombreCasa,
+           ca.id_persona AS IdPersona, c.mes AS Mes, c.anno AS Anno, c.estado AS Estado,
+           ca.precio AS PrecioCasa, ca.metros_cuadrados AS MetrosCuadrados, c.monto AS Monto
+    FROM dbo.Cobros c
+    INNER JOIN dbo.Casas ca ON ca.id_casa = c.id_casa
+    WHERE c.id_cobro = @id_cobro;
+END
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_InsertarDetalleCobro]
+    @id_servicio INT,
+    @id_cobro INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO dbo.DetalleCobro (id_servicio, id_cobro) VALUES (@id_servicio, @id_cobro);
+END
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_EliminarDetalleCobro]
+    @id_cobro INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE FROM dbo.DetalleCobro WHERE id_cobro = @id_cobro;
+END
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_ActualizarMontoCobro]
+    @id_cobro INT,
+    @monto DECIMAL(15,2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE dbo.Cobros SET monto = @monto WHERE id_cobro = @id_cobro;
+END
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_InsertarBitacora]
+    @detalle VARCHAR(255),
+    @id_cobro INT,
+    @id_user INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO dbo.Bitacora (detalle, id_cobro, id_user, fecha)
+    VALUES (@detalle, @id_cobro, @id_user, GETDATE());
+END
+GO

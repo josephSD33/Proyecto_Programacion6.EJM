@@ -1,122 +1,157 @@
-﻿@model List<DataModels.PviProyectoFinalDBStoredProcedures.SpListarCobrosResult>
+﻿
+@model List<DataModels.PviProyectoFinalDBStoredProcedures.SpListarCobrosResult>
+
 @{
     ViewBag.Title = ViewBag.Titulo;
     bool esEmpleado = ViewBag.EsEmpleado == true;
-    var meses = new[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
+    var meses = System.Globalization.CultureInfo
+        .GetCultureInfo("es-CR").DateTimeFormat;
 }
+
 <h2>@ViewBag.Titulo</h2>
+
+@if (ViewBag.Mensaje != null)
+{
+    <div class="alert alert-@((ViewBag.MensajeTipo as string) ?? "danger")">
+        @ViewBag.Mensaje
+    </div>
+}
+
 
 @if (esEmpleado)
 {
-    <form method="get" action="@Url.Action("Gestionar", "Cobros")" class="row g-2 mb-3">
-        <div class="col-md-4">
-            @Html.DropDownList("idCliente", (SelectList)ViewBag.Clientes, "Seleccione un cliente",
-                new { @class = "form-control", onchange = "this.form.submit();" })
-        </div>
-        <div class="col-md-4">
-            <select name="anno" class="form-control" onchange="this.form.submit();">
-                <option value="">Seleccione un año</option>
-                @for (int a = 2024; a <= 2034; a++)
-                {
-                    <option value="@a" @(ViewBag.Anno == a ? "selected" : "")>@a</option>
-                }
-            </select>
-        </div>
-        <div class="col-md-4">
-            <select name="mes" class="form-control" onchange="this.form.submit();">
-                <option value="">Seleccione un mes</option>
-                @for (int m = 1; m <= 12; m++)
-                {
-                    <option value="@m" @(ViewBag.Mes == m ? "selected" : "")>@meses[m - 1]</option>
-                }
-            </select>
-        </div>
-    </form>
+    using (Html.BeginForm("Gestionar", "Cobros", FormMethod.Get))
+    {
+        <div class="row mb-3">
 
-    @Html.ActionLink("Nuevo Cobro", "Crear", "Cobros", null, new { @class = "btn btn-primary mb-3" })
-}
-@if (ViewBag.Mensaje != null)
-{
-    <div class="alert alert-danger">@ViewBag.Mensaje</div>
+            <div class="col-md-4">
+                <label>Cliente</label>
+
+                @Html.DropDownList(
+                         "idCliente",
+                         (SelectList)ViewBag.Clientes,
+                         "Todos los clientes",
+                         new { @class = "form-control" })
+            </div>
+
+            <div class="col-md-4">
+                <label>Año</label>
+
+                <select name="anno" class="form-control">
+                    <option value="">Todos los años</option>
+
+                    @for (int a = 2024; a <= 2034; a++)
+                    {
+                        <option value="@a"
+                                @(ViewBag.Anno == a ? "selected" : "")>
+                            @a
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label>Mes</label>
+
+                <select name="mes" class="form-control">
+                    <option value="">Todos los meses</option>
+
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        <option value="@m"
+                                @(ViewBag.Mes == m ? "selected" : "")>
+                            @meses.GetMonthName(m)
+                        </option>
+                    }
+                </select>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Filtrar
+        </button>
+
+        @Html.ActionLink(
+                 "Nuevo cobro", "Crear", "Cobros",
+                 null, new { @class = "btn btn-success" })
+    }
 }
 
-<table class="table table-striped table-bordered">
+
+<table class="table table-bordered table-striped">
     <thead>
         <tr>
-            <th style="text-align:center; font-weight:bold">#Cobro</th>
+            <th># Cobro</th>
             @if (esEmpleado)
             {
-                <th style="text-align:left; font-weight:bold">Cliente</th>
+                <th>Cliente</th>
             }
-            <th style="text-align:center; font-weight:bold">Casa</th>
-            <th style="text-align:center; font-weight:bold">Periodo</th>
-            <th style="text-align:center; font-weight:bold">Estado</th>
-            <th></th>
+            <th>Casa</th>
+            <th>Período</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var c in Model)
         {
             <tr>
-                <td style="text-align:center">@c.IdCobro</td>
+                <td>@c.IdCobro</td>
                 @if (esEmpleado)
                 {
-                    <td style="text-align:left">@c.Cliente</td>
+                    <td>@c.Cliente</td>
                 }
-                <td style="text-align:center">@c.Casa</td>
-                <td style="text-align:center">@c.Periodo</td>
-                <td style="text-align:center">@c.Estado</td>
-                <td><button type="button" class="btn btn-primary btnConsultar" data-id="@c.IdCobro">Consultar</button></td>
+                <td>@c.Casa</td>
+                <td>@c.Periodo</td>
+                <td>@c.Estado</td>
+                <td>
+                    <button type="button"
+                            class="btn btn-primary btnConsultar"
+                            data-id="@c.IdCobro">
+                        Consultar
+                    </button>
+                </td>
             </tr>
         }
     </tbody>
 </table>
 
-@if (Model.Count == 0)
+@if (!Model.Any())
 {
     <p>No hay cobros para mostrar.</p>
 }
+
 <div id="dialog" title="Detalle del cobro"></div>
 
-@section Scripts{
+@section Scripts {
     <script>
-        $(function () {
-            $("#dialog").dialog({
-                autoOpen: false,
-                modal: true,
-                resizable: false,
-                width: 800,
-                maxHeight: $(window).height() - 60
-            });
+    $(function () {
 
-            $(document).on("click", ".btnConsultar", function () {
-                var idCobro = $(this).data("id");
-                $.ajax({
-                    url: '@Url.Action("Detalle", "Cobros")',
-                    type: "GET",
-                    data: { id: idCobro },
-                    cache: false
-                })
-                .done(function (html) {
+        $("#dialog").dialog({
+            autoOpen: false,
+            modal: true,
+            width: 800,
+            maxHeight: $(window).height() - 60
+        });
+
+        $(".btnConsultar").click(function () {
+
+            $.get('@Url.Action("Detalle", "Cobros")',
+                { id: $(this).data("id") },
+                function (html) {
                     $("#dialog").html(html).dialog("open");
-                })
-                .fail(function () {
-                    alert("No se pudo abrir el detalle del cobro.");
-                });
-            });
-
-            $(document).on("click", "#btnCerrarDetalle", function () {
-                $("#dialog").dialog("close");
+                }
+            ).fail(function () {
+                alert("No se pudo cargar el detalle.");
             });
         });
+
+        $(document).on("click", "#btnCerrarDetalle", function () {
+            $("#dialog").dialog("close");
+        });
+    });
     </script>
 }
-
-
-
-
-
-
 
 

@@ -1,0 +1,96 @@
+﻿
+@using DataModels
+
+@{
+    ViewBag.Title = "Editar cobro";
+
+    var cobro =
+        (PviProyectoFinalDBStoredProcedures.SpObtenerCobroBaseResult)
+        ViewBag.Cobro;
+
+    var servicios =
+        (List<PviProyectoFinalDBStoredProcedures.SpReadServiciosResult>)
+        ViewBag.Servicios;
+
+    var seleccionados = (List<int>)ViewBag.SeleccionadosIds;
+}
+
+<h2>Editar cobro</h2>
+
+<p><b>Número:</b> @cobro.IdCobro</p>
+<p><b>Casa:</b> @cobro.NombreCasa</p>
+<p><b>Período:</b> @cobro.Mes / @cobro.Anno</p>
+<p><b>Monto:</b> $ @cobro.Monto.ToString("N2")</p>
+
+<form id="formulario">
+
+    <input type="hidden"
+           id="idCobro"
+           value="@cobro.IdCobro" />
+
+    <h4>Servicios</h4>
+
+    @foreach (var s in servicios)
+    {
+        <div>
+            <label>
+                <input type="checkbox"
+                       name="servicios"
+                       value="@s.Id_servicio"
+                       @(seleccionados.Contains(s.Id_servicio) ? "checked" : "") />
+
+                @s.Nombre - $ @s.Precio
+            </label>
+        </div>
+    }
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">
+        Guardar
+    </button>
+
+    @Html.ActionLink(
+            "Regresar", "Gestionar", "Cobros",
+            null, new { @class = "btn btn-secondary" })
+
+</form>
+
+@section Scripts {
+
+    <script>
+
+    $("#formulario").submit(function (e) {
+
+        e.preventDefault();
+
+        var data = {
+            idCobro: $("#idCobro").val(),
+            servicios: $("input[name=servicios]:checked")
+                .map(function () {
+                    return this.value;
+                }).get()
+        };
+
+        if (data.servicios.length == 0) {
+            alert("Seleccione al menos un servicio.");
+            return;
+        }
+
+        $.post('@Url.Action("Editar", "Cobros")',
+            data,
+            function (resp) {
+
+                alert(resp.mensaje);
+
+                if (resp.ok) {
+                    window.location.href =
+                        '@Url.Action("Gestionar", "Cobros")';
+                }
+
+            });
+
+    });
+
+    </script>
+}

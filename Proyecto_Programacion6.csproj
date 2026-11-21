@@ -144,14 +144,20 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\CasaModel.cs" />
+    <Compile Include="Models\CobroHelper.cs" />
+    <Compile Include="Models\CobroIndexModel.cs" />
+    <Compile Include="Models\CobroModel.cs" />
     <Compile Include="Models\DetalleCobroViewModel.cs" />
-    <Compile Include="Models\MyDatabase1.generated.cs">
+    <Compile Include="Models\Dropdown.cs" />
+    <Compile Include="Models\MyDatabase.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>MyDatabase.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\ServicioModel.cs" />
     <Compile Include="Models\UsuarioLogin.cs" />
     <Compile Include="Models\ValidarSesion.cs" />
+    <Compile Include="Permisos\ValidarSessionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -177,7 +183,7 @@
     <Content Include="LinqToDB.Templates\CopyMe.SqlServer.tt.txt" />
     <Content Include="Models\MyDatabase.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>MyDatabase1.generated.cs</LastGenOutput>
+      <LastGenOutput>MyDatabase.generated.cs</LastGenOutput>
     </Content>
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -235,6 +241,8 @@
     <Content Include="Views\Servicio\Guardar.cshtml" />
     <Content Include="Views\Servicio\index.cshtml" />
     <Content Include="Views\Servicio\MisServicios.cshtml" />
+    <Content Include="Views\Cobros\Crear.cshtml" />
+    <Content Include="Views\Cobros\Editar.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
