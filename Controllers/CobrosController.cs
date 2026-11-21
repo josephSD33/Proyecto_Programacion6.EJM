@@ -53,34 +53,43 @@ namespace Proyecto_Programacion6.Controllers
             bool esEmpleado = Session["EsEmpleado"] != null && (bool)Session["EsEmpleado"];
             int? idPersona = Session["IdPersona"] as int?;
 
+            string resultado = "";
+            DetalleCobroViewModel modelo = new DetalleCobroViewModel();
+
             try
             {
-                
                 using (var db = new PviProyectoFinalDB("MyDatabase"))
                 {
                     var cobro = db.SpObtenerDetalleCobro(id).FirstOrDefault();
 
-                    if (cobro == null || (!esEmpleado && cobro.IdPersona != idPersona))
+                    if (cobro == null)
                     {
-                        return new HttpStatusCodeResult(403);
+                        resultado = "No se encontró el cobro.";
                     }
-
-                    var modelo = new DetalleCobroViewModel
+                    else if (!esEmpleado && cobro.IdPersona != idPersona)
                     {
-                        
-                        Cobro = cobro,
-                        Servicios = db.SpObtenerServiciosPorCobro(id).ToList(),
-                        Bitacora = db.SpObtenerBitacoraPorCobro(id).ToList(),
-                        EsEmpleado = esEmpleado
-                    };
-                    return PartialView("_DetalleCobro", modelo);
+                        resultado = "No tiene permisos para consultar este cobro.";
+                    }
+                    else
+                    {
+                        modelo.Cobro = cobro;
+                        modelo.Servicios = db.SpObtenerServiciosPorCobro(id).ToList();
+                        modelo.Bitacora = db.SpObtenerBitacoraPorCobro(id).ToList();
+                        modelo.EsEmpleado = esEmpleado;
+
+                        return PartialView("_DetalleCobro", modelo);
+                    }
                 }
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
-                    return new HttpStatusCodeResult(500);
+                resultado = "Ha ocurrido un error al cargar el detalle del cobro.";
             }
-        }        
+
+            ViewBag.resultado = resultado;
+
+            return PartialView("_DetalleCobro", modelo);
+        }
 
 
 
