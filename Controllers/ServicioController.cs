@@ -95,6 +95,29 @@ namespace Proyecto_Programacion6.Controllers
             return RedirectToAction("Index");
         }
 
+        [ValidarSesion]
+        public ActionResult Activar(int id)
+        {
+            string resultado = "";
+
+            try
+            {
+                using (PviProyectoFinalDB db = new PviProyectoFinalDB("MyDatabase"))
+                {
+                    db.SpActivarServicio(id);
+                    resultado = "Se ha activado el servicio";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = "No se ha activado el servicio";
+            }
+
+            TempData["resultado"] = resultado;
+
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         [ValidarSesion]
         public ActionResult Guardar(ServicioModel m)

@@ -851,3 +851,14 @@ END
 GO
 
 exec sp_readCasas;
+
+--Se actualiza cobro servicios, se agregar activar - inactivar servcios---
+
+CREATE PROCEDURE dbo.sp_ActivarServicio
+    @id_servicio INT
+AS
+BEGIN
+    UPDATE dbo.Servicios
+    SET Estado = 1
+    WHERE id_servicio = @id_servicio;
+END
