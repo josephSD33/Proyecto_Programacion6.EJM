@@ -24,16 +24,12 @@ namespace Proyecto_Programacion6.Controllers
             return Session["IdPersona"] == null ? (int?)null : Convert.ToInt32(Session["IdPersona"]);
         }
 
-        private bool PeriodoFuturo(int mes, int anno)
-        {
-            return CobroHelper.PeriodoFuturo(mes, anno);
-        }
-
+        // Valida que un cobro exista, esté pendiente y su periodo aún se pueda modificar.
         private string ValidarCobro(SpObtenerCobroBaseResult cobro)
         {
             if (cobro == null) return "No se encontró el cobro.";
             if (cobro.Estado != EstadoPendiente) return "Solo se pueden modificar cobros pendientes.";
-            if (!PeriodoFuturo(cobro.Mes, cobro.Anno)) return "El periodo del cobro ya no se puede modificar.";
+            if (!CobroHelper.PeriodoFuturo(cobro.Mes, cobro.Anno)) return "El periodo del cobro ya no se puede modificar.";
             return null;
         }
 
@@ -56,7 +52,6 @@ namespace Proyecto_Programacion6.Controllers
             if (IdSesion() == null) return RedirectToAction("Index", "Authentication");
 
             bool esEmpleado = EsEmpleado();
-            int? idPersona = IdSesion();
             var lista = new List<SpListarCobrosResult>();
 
             try
@@ -71,7 +66,7 @@ namespace Proyecto_Programacion6.Controllers
                     }
                     else
                     {
-                        lista = db.SpListarCobros(idPersona, null, null).ToList();
+                        lista = db.SpListarCobros(IdSesion(), null, null).ToList();
                     }
                 }
             }
@@ -93,40 +88,26 @@ namespace Proyecto_Programacion6.Controllers
             return View(lista);
         }
 
-
         public ActionResult Detalle(int id)
         {
-            bool esEmpleado = Session["EsEmpleado"] is bool
-                && (bool)Session["EsEmpleado"];
+            int? idPersona = IdSesion();
+            if (idPersona == null) return new HttpStatusCodeResult(401);
 
-            int? idPersona = Session["IdPersona"] as int?;
-
-            if (idPersona == null)
-                return new HttpStatusCodeResult(401);
+            bool esEmpleado = EsEmpleado();
 
             try
             {
                 using (var db = new PviProyectoFinalDB("MyDatabase"))
                 {
-                    var cobro = db.SpObtenerDetalleCobro(id)
-                        .FirstOrDefault();
-
-                    if (cobro == null)
-                        return HttpNotFound();
-
-                    if (!esEmpleado && cobro.IdPersona != idPersona)
-                        return new HttpStatusCodeResult(403);
+                    var cobro = db.SpObtenerDetalleCobro(id).FirstOrDefault();
+                    if (cobro == null) return HttpNotFound();
+                    if (!esEmpleado && cobro.IdPersona != idPersona) return new HttpStatusCodeResult(403);
 
                     var modelo = new DetalleCobroViewModel
                     {
                         Cobro = cobro,
-
-                        Servicios = db.SpObtenerServiciosPorCobro(id)
-                            .ToList(),
-
-                        Bitacora = db.SpObtenerBitacoraPorCobro(id)
-                            .ToList(),
-
+                        Servicios = db.SpObtenerServiciosPorCobro(id).ToList(),
+                        Bitacora = db.SpObtenerBitacoraPorCobro(id).ToList(),
                         EsEmpleado = esEmpleado
                     };
 
@@ -139,9 +120,7 @@ namespace Proyecto_Programacion6.Controllers
             }
         }
 
-
         // RF-003: Crear cobro.
-        // Las consultas de servicios se mantienen porque los SP actuales no aceptan una lista de IDs.
         public ActionResult Crear()
         {
             if (IdSesion() == null) return RedirectToAction("Index", "Authentication");
@@ -156,10 +135,8 @@ namespace Proyecto_Programacion6.Controllers
                         .Where(p => empleado || p.Id == usuario)
                         .OrderBy(p => p.Nombre).ToList();
 
-                    ViewBag.Clientes = new SelectList(clientes, "Id", "Nombre",
-                        empleado ? (int?)null : usuario);
-                    ViewBag.Servicios = db.SpReadServicios()
-                        .Where(s => s.Estado).OrderBy(s => s.Nombre).ToList();
+                    ViewBag.Clientes = new SelectList(clientes, "Id", "Nombre", empleado ? (int?)null : usuario);
+                    ViewBag.Servicios = db.SpReadServicios().Where(s => s.Estado).OrderBy(s => s.Nombre).ToList();
                     ViewBag.EsEmpleado = empleado;
                 }
             }
@@ -174,8 +151,7 @@ namespace Proyecto_Programacion6.Controllers
         public JsonResult Crear(int? idPersona, int? idCasa, int? mes, int? anno, int[] servicios)
         {
             int? usuario = IdSesion();
-            if (usuario == null)
-                return Json(new { ok = false, mensaje = "Su sesión ha expirado." });
+            if (usuario == null) return Json(new { ok = false, mensaje = "Su sesión ha expirado." });
 
             if (!EsEmpleado()) idPersona = usuario;
             if (idPersona == null || idCasa == null || mes == null || anno == null ||
@@ -204,7 +180,6 @@ namespace Proyecto_Programacion6.Controllers
                     if (seleccionados.Count != servicios.Length || servicios.Distinct().Count() != servicios.Length)
                         return Json(new { ok = false, mensaje = "Hay servicios no disponibles o repetidos." });
 
-                    // Usar la misma fórmula en Crear y Editar.
                     decimal monto = CobroHelper.CalcularMonto(
                         casa.Precio, casa.MetrosCuadrados, seleccionados.Select(s => s.Precio));
 
@@ -219,8 +194,8 @@ namespace Proyecto_Programacion6.Controllers
                             db.SpInsertarDetalleCobro(servicio.Id_servicio, idCobro);
 
                         db.SpInsertarBitacora(TextoBitacora("CREACION",
-                        "Casa " + casa.NombreCasa + ", periodo " + mes + "/" + anno +
-                        ", monto " + monto.ToString("N2")), idCobro, usuario);
+                            "Casa " + casa.NombreCasa + ", periodo " + mes + "/" + anno +
+                            ", monto " + monto.ToString("N2")), idCobro, usuario);
                         transaccion.Commit();
                     }
                 }
@@ -232,30 +207,27 @@ namespace Proyecto_Programacion6.Controllers
             }
         }
 
-        // Lista de casas para el dropdown de la vista Crear.
         [HttpGet]
         public JsonResult RetornaCasas(int? idPersona)
         {
             if (IdSesion() == null) return Json(new { error = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
             if (!EsEmpleado()) idPersona = IdSesion();
-            if (idPersona == null)
-                return Json(new List<Dropdown>(), JsonRequestBehavior.AllowGet);
+            if (idPersona == null) return Json(new List<Dropdown>(), JsonRequestBehavior.AllowGet);
 
-            var resultado = new List<Dropdown>();
             try
             {
                 using (var db = new PviProyectoFinalDB("MyDatabase"))
                 {
-                    resultado = db.SpListarCasasPorPersona(idPersona)
+                    var resultado = db.SpListarCasasPorPersona(idPersona)
                         .Select(c => new Dropdown { id = c.IdCasa, value = c.NombreCasa })
                         .ToList();
+                    return Json(resultado, JsonRequestBehavior.AllowGet);
                 }
             }
             catch (Exception)
             {
                 return Json(new { error = "No se pudieron cargar las casas" }, JsonRequestBehavior.AllowGet);
             }
-            return Json(resultado, JsonRequestBehavior.AllowGet);
         }
 
         // RF-004: Modificar cobro.
@@ -273,10 +245,8 @@ namespace Proyecto_Programacion6.Controllers
                     if (error != null) return Volver(error);
 
                     ViewBag.Cobro = cobro;
-                    ViewBag.Servicios = db.SpReadServicios()
-                        .Where(s => s.Estado).OrderBy(s => s.Nombre).ToList();
-                    ViewBag.SeleccionadosIds = db.SpObtenerServiciosPorCobro(id)
-                        .Select(s => s.IdServicio).ToList();
+                    ViewBag.Servicios = db.SpReadServicios().Where(s => s.Estado).OrderBy(s => s.Nombre).ToList();
+                    ViewBag.SeleccionadosIds = db.SpObtenerServiciosPorCobro(id).Select(s => s.IdServicio).ToList();
                 }
             }
             catch (Exception)
@@ -321,8 +291,8 @@ namespace Proyecto_Programacion6.Controllers
                             db.SpInsertarDetalleCobro(servicio.Id_servicio, idCobro);
 
                         db.SpInsertarBitacora(TextoBitacora("MODIFICACION",
-                        "Casa " + cobro.NombreCasa + ", periodo " + cobro.Mes + "/" +
-                        cobro.Anno + ", nuevo monto " + monto.ToString("N2")), idCobro, usuario);
+                            "Casa " + cobro.NombreCasa + ", periodo " + cobro.Mes + "/" +
+                            cobro.Anno + ", nuevo monto " + monto.ToString("N2")), idCobro, usuario);
                         transaccion.Commit();
                     }
                 }
@@ -355,8 +325,8 @@ namespace Proyecto_Programacion6.Controllers
                     {
                         db.SpActualizarEstadoCobro(id, EstadoEliminado, null);
                         db.SpInsertarBitacora(TextoBitacora("CANCELADA",
-                        "Se elimina el cobro de la casa " + cobro.NombreCasa +
-                        ", periodo " + cobro.Mes + "/" + cobro.Anno), id, usuario);
+                            "Se elimina el cobro de la casa " + cobro.NombreCasa +
+                            ", periodo " + cobro.Mes + "/" + cobro.Anno), id, usuario);
                         transaccion.Commit();
                     }
                 }
@@ -389,8 +359,8 @@ namespace Proyecto_Programacion6.Controllers
                     {
                         db.SpActualizarEstadoCobro(id, EstadoPagado, DateTime.Today);
                         db.SpInsertarBitacora(TextoBitacora("PAGADO",
-                        "Pago de la casa " + cobro.NombreCasa + ", periodo " +
-                        cobro.Mes + "/" + cobro.Anno), id, usuario);
+                            "Pago de la casa " + cobro.NombreCasa + ", periodo " +
+                            cobro.Mes + "/" + cobro.Anno), id, usuario);
                         transaccion.Commit();
                     }
                 }
