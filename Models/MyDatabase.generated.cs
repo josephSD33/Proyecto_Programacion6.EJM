@@ -279,6 +279,20 @@ namespace DataModels
 
 	public static partial class PviProyectoFinalDBStoredProcedures
 	{
+		#region SpActivarServicio
+
+		public static int SpActivarServicio(this PviProyectoFinalDB dataConnection, int? @idServicio)
+		{
+			var parameters = new []
+			{
+				new DataParameter("@id_servicio", @idServicio, LinqToDB.DataType.Int32)
+			};
+
+			return dataConnection.ExecuteProc("[dbo].[sp_ActivarServicio]", parameters);
+		}
+
+		#endregion
+
 		#region SpActualizarEstadoCobro
 
 		public static int SpActualizarEstadoCobro(this PviProyectoFinalDB dataConnection, int? @idCobro, string @estado, DateTime? @fechaPagada)
@@ -731,7 +745,7 @@ namespace DataModels
 			[Column("metros_cuadrados")   ] public int      Metros_cuadrados    { get; set; }
 			[Column("numero_habitaciones")] public int      Numero_habitaciones { get; set; }
 			[Column("numero_banos")       ] public int      Numero_banos        { get; set; }
-			                                public int      NumeroPropietario   { get; set; }
+			                                public string   NombrePropietario   { get; set; }
 			[Column("fecha_construccion") ] public DateTime Fecha_construccion  { get; set; }
 			[Column("estado")             ] public bool     Estado              { get; set; }
 		}

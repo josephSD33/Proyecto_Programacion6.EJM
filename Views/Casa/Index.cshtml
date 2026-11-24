@@ -27,14 +27,14 @@
                 <td>@casa.Metros_cuadrados</td>
                 <td>@casa.Numero_habitaciones</td>
                 <td>@casa.Numero_banos</td>
-                <td>@casa.NumeroPropietario</td>
+                <td>@casa.NombrePropietario</td>
                 <td>@casa.Fecha_construccion.ToShortDateString()</td>
 
                 <td>@(casa.Estado == true ? "Activa" : "Inactiva")</td>
                 <td>
                     @if (casa.Estado == true)
                     {
-                        @Html.ActionLink("Editar", "Editar", "Casas", new { id = casa.Id_casa, }, null)
+                        @Html.ActionLink("Consultar", "Editar", "Casas", new { id = casa.Id_casa, }, null)
                     }
                 </td>
             </tr>

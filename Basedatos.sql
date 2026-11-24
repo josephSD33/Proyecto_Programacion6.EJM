@@ -836,6 +836,19 @@ BEGIN
 END
 GO
 
+
+
+--Se actualiza cobro servicios, se agregar activar - inactivar servcios---
+
+CREATE PROCEDURE dbo.sp_ActivarServicio
+    @id_servicio INT
+AS
+BEGIN
+    UPDATE dbo.Servicios
+    SET Estado = 1
+    WHERE id_servicio = @id_servicio;
+END
+
 --Rf00-7 casas--
 CREATE PROCEDURE dbo.sp_readCasas
 AS
@@ -850,15 +863,18 @@ BEGIN
 END
 GO
 
-exec sp_readCasas;
-
---Se actualiza cobro servicios, se agregar activar - inactivar servcios---
-
-CREATE PROCEDURE dbo.sp_ActivarServicio
-    @id_servicio INT
+ALTER PROCEDURE dbo.sp_readCasas
 AS
 BEGIN
-    UPDATE dbo.Servicios
-    SET Estado = 1
-    WHERE id_servicio = @id_servicio;
+    SET NOCOUNT ON;
+
+    SELECT c.id_casa, c.nombre_casa, c.metros_cuadrados, c.numero_habitaciones,
+           c.numero_banos, p.nombre + ' ' + p.apellido AS NombrePropietario,
+           c.fecha_construccion, c.estado
+    FROM dbo.Casas c
+    INNER JOIN dbo.Persona p ON c.id_persona = p.id_persona
+    ORDER BY c.nombre_casa ASC;
 END
+GO
+
+exec sp_readCasas;

@@ -1,0 +1,9 @@
+﻿@{
+    ViewBag.Title = "Operación exitosa";
+}
+
+<h2>Operación exitosa</h2>
+
+<div class="alert alert-success">@ViewBag.Mensaje</div>
+
+@Html.ActionLink("Ir a la lista de casas", "Index", "Casa", null, new { @class = "btn btn-primary" })

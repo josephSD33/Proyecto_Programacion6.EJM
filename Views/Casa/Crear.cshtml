@@ -1,1 +1,126 @@
-﻿<p>Form de craer casa</p>
+﻿@model ProyectoCondominio.Models.CasaModel
+@{
+    ViewBag.Title = "Crear casas";
+}
+
+<h2>Crear casas</h2>
+
+<form method="post" id="formularioCasa">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label" for="Nombre_casa">Casa</label>
+        @Html.TextBoxFor(m => m.Nombre_casa, new { @class = "form-control", maxlength = "50", placeholder = "Nombre de la casa" })
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="Metros_cuadrados">Metros cuadrados</label>
+        @Html.TextBoxFor(m => m.Metros_cuadrados, new { @class = "form-control", type = "number", min = "1" })
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="Numero_habitaciones">Número de habitaciones</label>
+        @Html.TextBoxFor(m => m.Numero_habitaciones, new { @class = "form-control", type = "number", min = "1", max = "8" })
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="Numero_banos">Número de baños</label>
+        @Html.TextBoxFor(m => m.Numero_banos, new { @class = "form-control", type = "number", min = "1", max = "4" })
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="NumeroPropietario">Dueño</label>
+        <select name="NumeroPropietario" id="NumeroPropietario" class="form-control">
+            <option value="">Seleccione un dueño</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="Fecha_construccion">Fecha de construcción</label>
+        @Html.TextBoxFor(m => m.Fecha_construccion, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", min = "1970-01-01", max = "2029-12-31" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    @Html.ActionLink("Regresar", "Index", "Casa", null, new { @class = "btn btn-secondary" })
+
+    <div class="text-danger" style="margin-top:10px">@ViewBag.Mensaje</div>
+</form>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+
+        //solo letras y numeros
+        $.validator.addMethod("alfanumerico", function (value) {
+            return /^[A-Za-z0-9]+$/.test(value);
+        }, "El nombre solo puede contener letras y números.");
+
+        $("#formularioCasa").validate({
+            errorElement: "div",
+            errorClass: "text-danger",
+            rules: {
+                Nombre_casa: { required: true, maxlength: 50, alfanumerico: true },
+                Metros_cuadrados: { required: true, digits: true, min: 1 },
+                Numero_habitaciones: { required: true, digits: true, min: 1, max: 8 },
+                Numero_banos: { required: true, digits: true, min: 1, max: 4 },
+                NumeroPropietario: { required: true },
+                Fecha_construccion: { required: true, min: "1970-01-01", max: "2029-12-31" }
+            },
+            messages: {
+                Nombre_casa: {
+                    required: "El nombre de la casa es obligatorio.",
+                    maxlength: "Máximo 50 caracteres."
+                },
+                Metros_cuadrados: {
+                    required: "Los metros cuadrados son obligatorios.",
+                    digits: "Ingrese un número entero.",
+                    min: "Deben ser mayores a cero."
+                },
+                Numero_habitaciones: {
+                    required: "El número de habitaciones es obligatorio.",
+                    digits: "Ingrese un número entero.",
+                    min: "Deben ser mayores a cero.",
+                    max: "No pueden ser más de 8."
+                },
+                Numero_banos: {
+                    required: "El número de baños es obligatorio.",
+                    digits: "Ingrese un número entero.",
+                    min: "Deben ser mayores a cero.",
+                    max: "No pueden ser más de 4."
+                },
+                NumeroPropietario: { required: "Seleccione un dueño." },
+                Fecha_construccion: {
+                    required: "La fecha de construcción es obligatoria.",
+                    min: "La fecha debe ser de 1970 en adelante.",
+                    max: "La fecha debe ser de 2029 o antes."
+                }
+            }
+        });
+
+        function cleanDropdown(ddl) {
+            ddl.empty();
+            ddl.append("<option value=''>Seleccione un dueño</option>");
+        };
+
+        function loadDropdown(url, parametros, ddl, selected) {
+            $.post(url, parametros, function (data) {
+                cleanDropdown(ddl);
+                $(data).each(function () {
+                    var option = new Option(this.Nombre, this.Id);
+                    if (this.Id == selected) {
+                        option.selected = true;
+                    }
+                    ddl.append(option);
+                });
+            });
+        };
+
+        $(document).ready(function () {
+            loadDropdown('@Url.Action("RetornaDuenos", "Casa")', {}, $("#NumeroPropietario"), '@Model.NumeroPropietario');
+        });
+
+    </script>
+}
+

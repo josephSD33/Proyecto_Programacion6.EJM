@@ -246,6 +246,7 @@
     <Content Include="Views\Cobros\Editar.cshtml" />
     <Content Include="Views\Casa\Index.cshtml" />
     <Content Include="Views\Casa\Crear.cshtml" />
+    <Content Include="Views\Casa\Exito.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
